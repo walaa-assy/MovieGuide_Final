@@ -1,0 +1,28 @@
+
+
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+android:orientation="horizontal" android:layout_width="match_parent"
+android:layout_height="wrap_content"
+    android:background="@drawable/touch_selector">
+
+<ImageView
+    android:id="@+id/trailer_logo"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:src="@drawable/film"
+    android:scaleType="centerCrop" />
+
+
+<TextView
+    android:id="@+id/trailer_name"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="20dp"
+    android:textAlignment="center"
+    android:gravity="center_horizontal"
+    android:textStyle="bold" />
+
+
+
+</LinearLayout>

@@ -1,0 +1,22 @@
+<resources>
+
+    <style name="AppTheme" parent="@style/Theme.AppCompat.Light.DarkActionBar">
+    </style>
+
+    <style name="MyActionBarLogo" parent="@style/Widget.AppCompat.Light.ActionBar">
+        <item name="background">@color/light_orange</item>
+        <item name="logo">@drawable/capperboard</item>
+        <item name="displayOptions">useLogo|showHome</item>
+    </style>
+
+    <style name="MyDialogTheme" parent="android:Theme.Dialog">
+        <item name="android:background">#ffdddddd</item>
+    </style>
+
+    <!-- Style for forecast listview -->
+    <style name="ListStyle">
+
+    </style>
+
+</resources>
+
