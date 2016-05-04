@@ -1,19 +1,23 @@
 package com.example.android.movieguide.app;
 
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class ReviewsActivity extends ActionBarActivity {
+public class ReviewsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
-       setContentView(R.layout.activity_reviews);
+        setContentView(R.layout.activity_reviews);
+//        Dialog mDialog = new Dialog(this,android.R.style.Theme_Translucent_NoTitleBar);
+//
+//        mDialog .requestWindowFeature(Window.FEATURE_NO_TITLE);
+//       mDialog.setTitle("Movie Reviews");
+//        mDialog .setContentView(R.layout.activity_reviews);
+//        mDialog .show();
     }
 
 

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 /**
  * Created by Administrator on 4/8/2016.
  */
+// adapter for movies
 public class MovieAdapter extends BaseAdapter{
   ArrayList<MovieInfo> resultMovie;
 
@@ -24,28 +25,16 @@ public class MovieAdapter extends BaseAdapter{
     public MovieAdapter(Context c, ArrayList<MovieInfo> data) {
         mContext = c;
         resultMovie = data;
-        // inflater = LayoutInflater.from(mContext);
-        //c=this.context;
 
     }
 
-    /**
-     * How many items are in the data set represented by this Adapter.
-     *
-     * @return Count of items.
-     */
+
     @Override
     public int getCount() {
         return resultMovie.size();
     }
 
-    /**
-     * Get the data item associated with the specified position in the data set.
-     *
-     * @param position Position of the item whose data we want within the adapter's
-     *                 data set.
-     * @return The data at the specified position.
-     */
+
     @Override
     public Object getItem(int position) {
 
@@ -54,12 +43,7 @@ public class MovieAdapter extends BaseAdapter{
 
     }
 
-    /**
-     * Get the row id associated with the specified position in the list.
-     *
-     * @param position The position of the item within the adapter's data set whose row id we want.
-     * @return The id of the item at the specified position.
-     */
+
     @Override
     public long getItemId(int position) {
         return position;

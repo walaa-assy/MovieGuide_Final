@@ -9,8 +9,14 @@
         <item name="displayOptions">useLogo|showHome</item>
     </style>
 
-    <style name="MyDialogTheme" parent="android:Theme.Dialog">
+    <style name="Theme_Translucent_NoTitleBar" parent="android:Theme.Dialog">
         <item name="android:background">#ffdddddd</item>
+    </style>
+
+    <style name="AppCompatAlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorAccent">#5fa3d0</item>
+        <item name="android:textColorPrimary">#000000</item>
+        <item name="android:background">#FFFFFF</item>
     </style>
 
     <!-- Style for forecast listview -->

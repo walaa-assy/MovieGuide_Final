@@ -16,6 +16,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RatingBar;
@@ -36,27 +38,27 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+
 /**
  * A placeholder fragment containing a simple view.
  */
-public  class DetailFragment extends Fragment {
+public class DetailFragment extends Fragment {
     private static final String LOG_TAG = DetailFragment.class.getSimpleName();
-    private int mActivatedPosition = ListView.INVALID_POSITION;
+    //  private int mActivatedPosition = GridView.INVALID_POSITION;
+    private int mActivatedPosition = 0;
     MovieInfo m;
-    //private DetailsAdapter dAdapter;
-    private ArrayList<Reviews> rev = new ArrayList<>();
-    private ListView rListView;
+
     public static final String MOVIE_BUNDLE = "MovieInfo";
 
     private CommonAdapter cAdapter;
 
     private static final String SHARE_HASHTAG = " #MovieguideApp";
-    private String shareStr;
-    ExtraBase base;
-    ArrayList<ExtraBase> t = new ArrayList<>();
-   ArrayList<ExtraBase> TrailersList;
-String baseTrailer;
-boolean btnFavState = false;
+
+
+    ArrayList<ExtraBase> TrailersList;
+
+    boolean btnFavState = false;
 
 
     public DetailFragment() {
@@ -74,12 +76,11 @@ boolean btnFavState = false;
     }
 
 
-
-    public void insertFavoriteMovies() {
+    public void insertFavoriteMovies(MovieInfo movie) {
 
         MoviesDBHelper helper = new MoviesDBHelper(getActivity());
         helper.getWritableDatabase();
-        if (helper.addFAVORITEMOVIES(m) != -1) {
+        if (helper.addFAVORITEMOVIES(movie) != -1) {
             Toast.makeText(getActivity(), "successfully added", Toast.LENGTH_LONG).show();
         }
     }
@@ -91,13 +92,12 @@ boolean btnFavState = false;
         ShareActionProvider mShareActionProvider =
                 (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
 
-        if (mShareActionProvider != null ) {
+        if (mShareActionProvider != null) {
             mShareActionProvider.setShareIntent(createShareTrailerIntent());
         } else {
             Log.d(LOG_TAG, "Share Action Provider is null?");
         }
     }
-
 
 
     @Override
@@ -108,22 +108,19 @@ boolean btnFavState = false;
         Bundle arguments = getArguments();
         if (arguments != null) {
             m = arguments.getParcelable(MOVIE_BUNDLE);
-        }
-
-        else {
+        } else {
             Intent i = getActivity().getIntent();
             m = (MovieInfo) i.getParcelableExtra(MOVIE_BUNDLE);
         }
 
-        String number = m.getMovieId();
+        final String number = m.getMovieId();
         String title = m.getTitle();
         String posterStr = m.getPosterPath();
         String backdropStr = m.getBackdropPath();
         String detailPosterStr = m.getDetailPoster();
         String overview = m.getOverview();
         String rd = m.getReleaseDate();
-        //String rd = i.getStringExtra("releaseDate");
-        //Toast.makeText(getActivity(), "rd = " + rd, Toast.LENGTH_LONG).show();
+
         float vote = (float) m.getVoteAverage();
         double popularity = m.getPopularity();
 
@@ -146,25 +143,25 @@ boolean btnFavState = false;
         voteRatingBar.setRating(fVote);
 
 
-
         FetchTrailersTask trailerTask = new FetchTrailersTask();
         trailerTask.execute(number);
-
-//        FetchReviewsTask reviewsTask = new FetchReviewsTask();
-//        reviewsTask.execute(number);
-
-        //ArrayList<ExtraBase> t = new ArrayList<>();
-
-        Toast.makeText(getActivity(), "vote average = " + vote , Toast.LENGTH_LONG).show();
-
+        try {
+            TrailersList = trailerTask.get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        ArrayList<ExtraBase> t = new ArrayList<>();
         ListView tListView = (ListView) rootView.findViewById(R.id.trailers_listview);
-       cAdapter = new CommonAdapter(getActivity(), t);
+        cAdapter = new CommonAdapter(getActivity(), t);
 
+        //Toast.makeText(getActivity(), uu, Toast.LENGTH_LONG).show();
         tListView.setAdapter(cAdapter);
         tListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                base = cAdapter.getItem(position);
+                ExtraBase base = cAdapter.getItem(position);
                 Uri uri = Uri.parse(base.getKey());
                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                 if (intent.resolveActivity(getActivity().getPackageManager()) != null)
@@ -172,39 +169,61 @@ boolean btnFavState = false;
             }
         });
 
+        final CheckBox favStar = (CheckBox) rootView.findViewById(R.id.fav_star);
+        favStar.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+if (favStar.isChecked()){ insertFavoriteMovies(m);}
+            }
 
-//        rListView = (ListView) rootView.findViewById(R.id.reviews_listview);
-//        dAdapter = new DetailsAdapter(getActivity(), rev);
-//        rListView.setAdapter(dAdapter);
+        }
+        );
+
 
         final Button addFAV = (Button) rootView.findViewById(R.id.fav_button);
-        if (btnFavState==true)
-        { addFAV.setText("already a favorite");
-            addFAV.setBackgroundResource(R.drawable.orange);}
+        if (btnFavState == true)
 
-              addFAV.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (btnFavState == true)
-                    return;
-                else {
-                    insertFavoriteMovies();
-                    btnFavState = true;
-                    addFAV.setText("already a favorite");
-                    addFAV.setBackgroundResource(R.drawable.orange);
-                }
-            }
-        });
+        {
+            addFAV.setText("already a favorite");
+            addFAV.setBackgroundResource(R.drawable.dontstop);
+        }
+
+        addFAV.setOnClickListener(new View.OnClickListener()
+
+                                  {
+
+                                      @Override
+                                      public void onClick(View v) {
+
+                                          MoviesDBHelper helper = new MoviesDBHelper(getActivity());
+                                          helper.getReadableDatabase();
+                                          if (helper.checkMovieExists(m)) {
+
+                                              Toast.makeText(getActivity(), " Already A Favorite", Toast.LENGTH_SHORT).show();
+                                              return;
+                                          } else {
+                                              insertFavoriteMovies(m);
+                                              addFAV.setText("Added to favorites");
+                                              addFAV.setBackgroundResource(R.drawable.dontstop);
+                                          }
+                                      }
+                                  }
+        );
+
 
         final Button btnReviews = (Button) rootView.findViewById(R.id.reviews_button);
-btnReviews.setOnClickListener(new View.OnClickListener() {
-    @Override
-    public void onClick(View v) {
-        Intent i = new Intent(getActivity(), ReviewsActivity.class);
-                i.putExtra(MOVIE_BUNDLE, m);
-                startActivity(i);
-    }
-});
+        btnReviews.setOnClickListener(new View.OnClickListener()
+
+                                      {
+                                          @Override
+                                          public void onClick(View v) {
+                                              Intent i = new Intent(getActivity(), ReviewsActivity.class);
+                                              i.putExtra(MOVIE_BUNDLE, m);
+                                              startActivity(i);
+                                          }
+                                      }
+
+        );
 
         return rootView;
     }
@@ -218,187 +237,16 @@ btnReviews.setOnClickListener(new View.OnClickListener() {
     private Intent createShareTrailerIntent() {
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-
-       shareIntent.setType("text/plain");
-        //shareIntent.setType("image/*");
-
-       shareStr = m.getTitle();
-     ExtraBase firstTrailer =new ExtraBase();
-//        //ExtraBase firstTrailer = base;
-     if (t.size() > 0) {
-            firstTrailer = t.get(0);
-        }
-     String tURL= firstTrailer.getKey();
-
-        shareIntent.putExtra(Intent.EXTRA_TEXT, shareStr + " \n" +" TRAILER" +" \n" + tURL+" \n" + SHARE_HASHTAG);
+        shareIntent.setType("text/plain");
+        String shareStr = m.getTitle();
+        String tURL = TrailersList.get(0).getKey();
+        shareIntent.putExtra(Intent.EXTRA_TEXT, shareStr + " \n" + " TRAILER" + " \n" + tURL + " \n" + SHARE_HASHTAG);
         return shareIntent;
     }
 
-//    public class FetchReviewsTask extends AsyncTask<String, Void, ArrayList<Reviews>> {
-//
-//        private final String LOG_TAG = FetchReviewsTask.class.getSimpleName();
-//
-//
-//        private ArrayList<Reviews> getReviewsDataFromJson(String jsonStr)
-//                throws JSONException {
-//            // JSON Node names
-//            final String TAG_MOVIE_NUMBER = "id";
-//            final String TAG_RESULT = "results";
-//            final String TAG_REVIEW_ID = "id";
-//            final String TAG_REVIEW_AUTHOR = "author";
-//            final String TAG_REVIEW_CONTENT = "content";
-//            final String TAG_REVIEW_URL = "url";
-//
-//
-//            JSONObject reviewsDataJson = new JSONObject(jsonStr);
-//            //json object movie number know as movie id
-//            //JSONObject movieID= reviewsDataJson.getJSONObject(TAG_MOVIE_NUMBER);
-//            String movieNumber = reviewsDataJson.getString(TAG_MOVIE_NUMBER);
-//
-//
-//            //json array results
-//            JSONArray trailers = reviewsDataJson.getJSONArray(TAG_RESULT);
-//
-//
-//            // ArrayList<MovieInfo> ReviewsList = new ArrayList<MovieInfo>();
-//
-//            ArrayList<Reviews> ReviewsList = new ArrayList<>();
-//
-//            for (int i = 0; i < trailers.length(); i++) {
-//
-//                // JSON Node names
-//                JSONObject c = trailers.getJSONObject(i);
-//                String reviewID = c.getString(TAG_REVIEW_ID);
-//                String author = c.getString(TAG_REVIEW_AUTHOR);
-//                String content = c.getString(TAG_REVIEW_CONTENT);
-//                String url = c.getString(TAG_REVIEW_URL);
-//
-////                    MovieInfo movieReview = new MovieInfo();
-////                    movieReview.setMovieID(movieNumber);
-////                    movieReview.setMovieReviewURL(url);
-//
-//                Reviews movieReview = new Reviews(movieNumber, reviewID, author, content, url);
-//
-//                ReviewsList.add(i, movieReview);
-//
-//            }
-//
-//
-//            for (Reviews s : ReviewsList) {
-//                Log.v(LOG_TAG, "Reviews entry: " + s);
-//
-//            }
-//
-//            return ReviewsList;
-//
-//        }
-//
-//        @Override
-//        protected ArrayList<Reviews> doInBackground(String... params) {
-//
-//            if (params.length == 0) {
-//                return null;
-//            }
-//
-//            HttpURLConnection urlConnection = null;
-//            BufferedReader reader = null;
-//
-//            // Will contain the raw JSON response as a string.
-//            String moviesJsonStr = null;
-////                String number = "209112";
-////                String mode = "reviews";
-//
-//            try {
-//
-//
-//                // Construct the URL for the moviedb query
-//                //http://api.themoviedb.org/3/movie/209112/reviews?api_key=00000000000000000000000
-//
-//
-//                final String MOVIES_BASE_URL = "http://api.themoviedb.org/3/movie";
-//
-//                final String APPID_PARAM = "api_key";
-//                Uri builtUri = Uri.parse(MOVIES_BASE_URL).buildUpon()
-//                        .appendPath(params[0])
-//                        .appendPath("reviews")
-//                        .appendQueryParameter(APPID_PARAM, BuildConfig.TheMovieDB_API_KEY)
-//                        .build();
-//
-//                URL url = new URL(builtUri.toString());
-//                Log.v(LOG_TAG, "http://api.themoviedb.org/3/movie/209112/videos?api_key=dee364a81187df2c66fa2851bb30b111");
-//                Log.v(LOG_TAG, "Built URI " + builtUri.toString());
-//
-//                // Create the request to OpenWeatherMap, and open the connection
-//                urlConnection = (HttpURLConnection) url.openConnection();
-//                urlConnection.setRequestMethod("GET");
-//                urlConnection.connect();
-//
-//                // Read the input stream into a String
-//                InputStream inputStream = urlConnection.getInputStream();
-//                StringBuffer buffer = new StringBuffer();
-//                if (inputStream == null) {
-//                    // Nothing to do.
-//                    return null;
-//                }
-//                reader = new BufferedReader(new InputStreamReader(inputStream));
-//                String line;
-//                while ((line = reader.readLine()) != null) {
-//
-//                    buffer.append(line + "\n");
-//                }
-//
-//                if (buffer.length() == 0) {
-//                    // Stream was empty.  No point in parsing.
-//                    return null;
-//                }
-//                moviesJsonStr = buffer.toString();
-//                // Log.v(LOG_TAG, "Movies JSON String: " + moviesJsonStr);
-//
-//            } catch (IOException e) {
-//                Log.e(LOG_TAG, "Error ", e);
-//
-//                return null;
-//            } finally {
-//                if (urlConnection != null) {
-//                    urlConnection.disconnect();
-//                }
-//                if (reader != null) {
-//                    try {
-//                        reader.close();
-//                    } catch (final IOException e) {
-//                        Log.e(LOG_TAG, "Error closing stream", e);
-//                    }
-//                }
-//            }
-//
-//            try {
-//                return getReviewsDataFromJson(moviesJsonStr);
-//            } catch (JSONException e) {
-//                Log.e(LOG_TAG, e.getMessage(), e);
-//                e.printStackTrace();
-//            }
-//            return null;
-//        }
-//
-//
-//        @Override
-//        protected void onPostExecute(ArrayList<Reviews> result) {
-//            if (result != null) {
-//                if (result != null) {
-//                    dAdapter.clear();
-//                    for (Reviews s : result) {
-//                        dAdapter.add(s);
-//                    }
-//                }
-//            }
-//        }
-//
-//
-//    }
 
     public class FetchTrailersTask extends AsyncTask<String, Void, ArrayList<ExtraBase>> {
 
-        //private CommonAdapter cAdapter;
 
         private final String LOG_TAG = FetchTrailersTask.class.getSimpleName();
 
@@ -477,11 +325,6 @@ btnReviews.setOnClickListener(new View.OnClickListener() {
             try {
 
 
-                // Construct the URL for the moviedb query
-
-                //http://api.themoviedb.org/3/movie/140607/videos?api_key=00000000000000000000000
-
-
                 final String MOVIES_BASE_URL = "http://api.themoviedb.org/3/movie";
 
                 final String APPID_PARAM = "api_key";
@@ -492,8 +335,6 @@ btnReviews.setOnClickListener(new View.OnClickListener() {
                         .build();
 
                 URL url = new URL(builtUri.toString());
-                Log.v(LOG_TAG, "http://api.themoviedb.org/3/movie/209112/videos?api_key=dee364a81187df2c66fa2851bb30b111");
-                Log.v(LOG_TAG, "Built URI " + builtUri.toString());
 
 
                 urlConnection = (HttpURLConnection) url.openConnection();

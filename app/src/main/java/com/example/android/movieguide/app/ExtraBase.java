@@ -3,6 +3,8 @@ package com.example.android.movieguide.app;
 /**
  * Created by Administrator on 4/21/2016.
  */
+
+//class for trailers
 public class ExtraBase {
 
     String movieNumber;

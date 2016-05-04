@@ -13,6 +13,8 @@ import java.util.ArrayList;
 /**
  * Created by Administrator on 4/22/2016.
  */
+//adapter for trailers
+
 public class CommonAdapter  extends ArrayAdapter<ExtraBase>{
 
 

@@ -7,7 +7,7 @@
     <string name="title_activity_reviews">Reviews</string>
     <string name="title_activity_settings">Settings</string>
 
-    <string name="pref_sorting_label">Movies Sorting Order</string>
+    <string name="pref_sorting_label">Category</string>
     <string name="pref_sorting_key">Movies Order</string>
     <!--<string name="pref_sorting_order_default">Popular</string>-->
     <string name="pref_sorting_most_popular" translatable="false">popular</string>

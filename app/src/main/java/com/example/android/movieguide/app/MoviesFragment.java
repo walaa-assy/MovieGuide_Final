@@ -41,12 +41,13 @@ public class MoviesFragment extends Fragment {
 
     //    private  ArrayList<MovieInfo> MovieList = new ArrayList<MovieInfo>();
 //private  ArrayList<MovieInfo> MovieList;
-    private MovieAdapter movieAdapter;
+    MovieAdapter movieAdapter;
     private MovieInfo movie;
     private GridView gridview;
     private String sorting;
+    MovieAdapter favoriteAdapter;
 
-
+//    ArrayList<MovieInfo> favorites;
 
     Callback comm;
 
@@ -64,34 +65,24 @@ public class MoviesFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        // Add this line in order for this fragment to handle menu events.
+
         inflater.inflate(R.menu.moviesfragment, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
             updateMovies();
             return true;
         }
-        else if (id == R.id.action_favorites){
 
-            ArrayList<MovieInfo> favorites = new ArrayList<>();
-            MoviesDBHelper helper = new MoviesDBHelper(getActivity());
-            helper.getReadableDatabase();
-            favorites = (ArrayList<MovieInfo>) helper.getFAVORITEMOVIES();
-
-            MovieAdapter favoriteAdapter= new MovieAdapter(getActivity(), favorites);
-
-            gridview.setAdapter(favoriteAdapter);
-        }
 
         return super.onOptionsItemSelected(item);
     }
+
+
 
 
     @Override
@@ -106,19 +97,19 @@ public class MoviesFragment extends Fragment {
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+
+                if (sorting.equals("favorites")) {
+                    movie = (MovieInfo) favoriteAdapter.getItem(position);
+
+                } else {
                 movie = (MovieInfo) movieAdapter.getItem(position);
+                 }
                 Toast.makeText(getActivity(), movie.getTitle(), Toast.LENGTH_SHORT).show();
-//                Intent i = new Intent(getActivity(), DetailActivity.class);
-//                i.putExtra("MovieInfo", movie);
-//                startActivity(i);
                 comm.respond(movie);
                 mActivatedPosition = position;
 
             }
         });
-//        ListAdapter adapter = gridview.getAdapter();
-//        gridview.performItemClick(gridview.getChildAt(0), 0, adapter.getItemId(0));
-        //gridview.performItemClick(gridview.getChildAt(mPosition), mPosition,gridview.getAdapter().getItemId(mPosition));
 
         //if (isTablet(getActivity()))
             //gridview.performItemClick(gridview.getChildAt(0), 0,movieAdapter.getItemId(0));
@@ -150,15 +141,14 @@ public class MoviesFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mActivatedPosition != GridView.INVALID_POSITION) {
-            // Serialize and persist the activated item position.
+
             outState.putInt(STATE_ACTIVATED_POSITION, mActivatedPosition);
         }
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public void setActivateOnItemClick(boolean activateOnItemClick) {
-        // When setting CHOICE_MODE_SINGLE, ListView will automatically
-        // give items the 'activated' state when touched.
+
         gridview.setChoiceMode(activateOnItemClick
                 ? GridView.CHOICE_MODE_SINGLE
                 : GridView.CHOICE_MODE_NONE);
@@ -175,11 +165,7 @@ public class MoviesFragment extends Fragment {
         mActivatedPosition = position;
     }
 
-//    @Override
-//    public void onActivityCreated(Bundle savedInstanceState) {
-//        super.onActivityCreated(savedInstanceState);
-//        comm = (Callback) getActivity();
-//    }
+
 
     private void updateMovies() {
 //        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -205,12 +191,14 @@ public class MoviesFragment extends Fragment {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         sorting = prefs.getString(getString(R.string.pref_sorting_key), getString(R.string.pref_sorting_most_popular));
         if (sorting.equals("favorites")) {
+
             ArrayList<MovieInfo> favorites = new ArrayList<>();
             MoviesDBHelper helper = new MoviesDBHelper(getActivity());
             helper.getReadableDatabase();
             favorites = (ArrayList<MovieInfo>) helper.getFAVORITEMOVIES();
-            MovieAdapter favoriteAdapter = new MovieAdapter(getActivity(), favorites);
+             favoriteAdapter = new MovieAdapter(getActivity(), favorites);
             gridview.setAdapter(favoriteAdapter);
+
         } else
     updateMovies();
 
@@ -244,14 +232,13 @@ public class MoviesFragment extends Fragment {
             JSONObject moviesDataJson = new JSONObject(jsonStr);
             JSONArray movies = moviesDataJson.getJSONArray(TAG_RESULT);
 
-            // ArrayList<String> resultMovie = new ArrayList<String>();
-            //ArrayList<MovieInfo> resultMovie = new ArrayList<MovieInfo>();
+
             ArrayList<MovieInfo> MovieList = new ArrayList<MovieInfo>();
 
-            //MovieList = new ArrayList<>();
+
             for (int i = 0; i < movies.length(); i++) {
 
-                // JSON Node names
+
                 JSONObject c = movies.getJSONObject(i);
                 String id = c.getString(TAG_ID);
                 String title = c.getString(TAG_TITLE);
@@ -273,10 +260,6 @@ public class MoviesFragment extends Fragment {
             }
 
 
-            //for (MovieInfo s : MovieList) {
-            // Log.v(LOG_TAG, "Movies entry: " + s);
-
-            // }
 
             return MovieList;
 
@@ -284,35 +267,20 @@ public class MoviesFragment extends Fragment {
 
         @Override
         protected ArrayList<MovieInfo> doInBackground(String... params) {
-            // protected String[] doInBackground(String... params){
 
-            // If there's no zip code, there's nothing to look up.  Verify size of params.
             if (params.length == 0) {
                 return null;
             }
-            // These two need to be declared outside the try/catch
-            // so that they can be closed in the finally block.
+
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
 
-            // Will contain the raw JSON response as a string.
             String moviesJsonStr = null;
 
             try {
 
 
-                // Construct the URL for the moviedb query
-                //http://api.themoviedb.org/3/movie/popular?api_key=[YOUR_API_KEY]
-                //http://api.themoviedb.org/3/movie/top_rated?api_key=[YOUR_API_KEY]
-                //http://api.themoviedb.org/3/movie/popular?api_key=dee364a81187df2c66fa2851bb30b111
 
-                /*** me
-                 String baseUrl = "http://api.themoviedb.org/3/movie/top_rated?";
-                 String apiKey = "api_key="+ BuildConfig.TheMovieDB_API_KEY;
-                 URL url = new URL(baseUrl.concat(apiKey));
-                 Log.v(LOG_TAG, "url is : "+ url);***/
-
-                //abd-allah zidan
                 final String MOVIES_BASE_URL = "http://api.themoviedb.org/3/movie";
                 final String QUERY_PARAM = "top_rated";
                 final String APPID_PARAM = "api_key";
@@ -320,21 +288,18 @@ public class MoviesFragment extends Fragment {
                         .appendPath(params[0])
                         .appendQueryParameter(APPID_PARAM, BuildConfig.TheMovieDB_API_KEY)
                         .build();
-//.appendQueryParameter(QUERY_PARAM,params[0])
-                URL url = new URL(builtUri.toString());
-                Log.v(LOG_TAG, "http://api.themoviedb.org/3/movie/popular?api_key=dee364a81187df2c66fa2851bb30b111");
-                Log.v(LOG_TAG, "Built URI " + builtUri.toString());
 
-                // Create the request to OpenWeatherMap, and open the connection
+                URL url = new URL(builtUri.toString());
+
+
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.connect();
 
-                // Read the input stream into a String
                 InputStream inputStream = urlConnection.getInputStream();
                 StringBuffer buffer = new StringBuffer();
                 if (inputStream == null) {
-                    // Nothing to do.
+
                     return null;
                 }
                 reader = new BufferedReader(new InputStreamReader(inputStream));
@@ -345,11 +310,11 @@ public class MoviesFragment extends Fragment {
                 }
 
                 if (buffer.length() == 0) {
-                    // Stream was empty.  No point in parsing.
+
                     return null;
                 }
                 moviesJsonStr = buffer.toString();
-                // Log.v(LOG_TAG, "Movies JSON String: " + moviesJsonStr);
+
 
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
@@ -379,7 +344,7 @@ public class MoviesFragment extends Fragment {
 
 
         @Override
-//        protected void onPostExecute(String[] result) {
+
         protected void onPostExecute(ArrayList<MovieInfo> result) {
             if (result != null) {
 
@@ -392,8 +357,6 @@ public class MoviesFragment extends Fragment {
                 }
                 MovieInfo movie = result.get(mActivatedPosition);
                 comm.respond(movie);
-               // gridview.performItemClick(gridview.getChildAt(mPosition), 0, movieAdapter.getItemId(mPosition));
-               // gridview.performItemClick(gridview.getChildAt(0), 0, movieAdapter.getItemId(0));
 
             }
         }

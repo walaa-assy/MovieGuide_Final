@@ -27,12 +27,7 @@ android:layout_height="wrap_content"
             android:layout_margin="22dp"
             android:background="#f0f4c3"/>
 
-    <View
-        android:id="@+id/line3"
-        android:layout_margin="22dp"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#4E4B4F" />
+
 
     </LinearLayout>
 

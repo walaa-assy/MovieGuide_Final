@@ -151,8 +151,6 @@ public class ReviewsFragment extends Fragment {
                         .build();
 
                 URL url = new URL(builtUri.toString());
-                Log.v(LOG_TAG, "http://api.themoviedb.org/3/movie/209112/videos?api_key=dee364a81187df2c66fa2851bb30b111");
-                Log.v(LOG_TAG, "Built URI " + builtUri.toString());
 
                 // Create the request to OpenWeatherMap, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();

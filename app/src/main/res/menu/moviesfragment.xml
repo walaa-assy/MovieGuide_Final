@@ -6,9 +6,5 @@
         android:title="@string/action_refresh"
         app:showAsAction="never" />
 
-    <item
-        android:id="@+id/action_favorites"
-        android:title="@string/action_favorites"
-        app:showAsAction="never" />
 
 </menu>
